@@ -21,6 +21,7 @@ int main(){
 	//flag to check if any non built-in commands have been run
 	int extStat = 0;
 	char* newargv[] = {"ls", NULL};
+	int bfFlag = 0;
 
 	while(1){
 	   	//char for input and prompt for the user
@@ -63,8 +64,8 @@ int main(){
 				chdir(token);
 			}
 
-			printf("%s\n", getcwd(dir, 512));
-			fflush(stdout);
+			//printf("%s\n", getcwd(dir, 512));
+			//fflush(stdout);
 		}
 		
 		//user enters status command
@@ -79,9 +80,51 @@ int main(){
 			//extract new process from command
 			newargv[i] = strtok_r(input, " ", &saveptr);
 			i++;
+			
+			//extract first argument from command (if it exists)
+			token = strtok_r(NULL, " ", &saveptr);
+			/*
+			if(strcmp(token, "&") == 0){
+				printf("now in back ground\n");
+				fflush(stdout);
+				bfFlag = 1;
+			}
+			*/
+			newargv[i] = token;
+			i++;
+		
+			//extract second argument from command (if it exists)
+			token = strtok_r(NULL, " ", &saveptr);
+			/*
+			if(strcmp(token, "&") == 0){
+				printf("now in back ground\n");
+				fflush(stdout);
+				bfFlag = 1;
+			}
+			*/
+			newargv[i] = token;
+			i++;
+
+			//extract third argument from command (if it exists)
+			token = strtok_r(NULL, " ", &saveptr);
+			/*
+			if(strcmp(token, "&") == 0){
+				printf("now in back ground\n");
+				fflush(stdout);
+				bfFlag = 1;
+			}
+			*/
+			newargv[i] = token;
+			i++;
 
 			token = strtok_r(NULL, " ", &saveptr);
-			//printf("Token: %s\n", token);
+			/*
+			if(strcmp(token, "&") == 0){
+				printf("now in back ground\n");
+				fflush(stdout);
+				bfFlag = 1;
+			}
+			*/
 			newargv[i] = token;
 			i++;
 
@@ -91,8 +134,11 @@ int main(){
 				i++;
 			}
 			*/
-
+			
+			//set final argument to NULL 
+			//this indicating to the process that there are no more arguments
 			newargv[i] = NULL;
+
 			//fork to start running a new child process
 			spawnPid = fork();
 			switch(spawnPid){
@@ -118,7 +164,26 @@ int main(){
 				//after the child is executed
 				default:
 					//wait for the child process to complete
-					spawnPid = waitpid(spawnPid, &childStatus, 0);
+					/*
+					if(!(strcmp(newargv[1], "&") == 0) && !(strcmp(newargv[2], "&") == 0) && !(strcmp(newargv[3], "&") == 0) && !(strcmp(newargv[4], "&") == 0)){
+						spawnPid = waitpid(spawnPid, &childStatus, 0);
+					}
+					else{
+						printf("background pid id %d\n", spawnPid);
+						fflush(stdout);
+					}
+					*/
+
+					if(bfFlag == 0){
+						spawnPid = waitpid(spawnPid, &childStatus, 0);
+					}
+				
+					else if(bfFlag == 1){
+						printf("background pid id %d\n", spawnPid);
+						fflush(stdout);
+						bfFlag = 0;
+					}
+
 					break;
 			}
 		}

@@ -10,7 +10,7 @@
 #include <signal.h>
 #include <sys/wait.h>
 
-/*
+
 void printExitValOrSignal(int exitStatus){
     	if(WIFEXITED(exitStatus)){
            	 printf("exit value %d\n", WEXITSTATUS(exitStatus));
@@ -31,29 +31,31 @@ void checkBG(){
 	}
 
 }
-*/
+
 
 int main(){
    	//spawnpid for forks
    	pid_t spawnPid = -5;
-	int childStatus, fd, i;
+	int childStatus, fd, i, j;
 	//chars for use in extracting command and changing directory for cd
 	char dir[512] = {0};
 	char* token;
+	char* token2;
 	char* saveptr;
+        char* saveptr2;
 	//flag to check if any non built-in commands have been run
 	int extStat = 0;
 	char* newargv[512] = {0};
-	int bfFlag = 0;
+	int bfFlag, ignoreFlag = 0;
 	
 	//printf("smallsh pid is: %d\n", getpid());
 
 	while(1){
 	   	//char for input and prompt for the user
-		//memset(newargv, 0, sizeof(newargv));
+		memset(newargv, 0, sizeof(newargv));
 	   	char input[512] = "";
 		int spaceCount = 0;
-		//checkBG();
+		checkBG();
 		printf(": ");
 		fflush(stdout);
 		//changed scanf format to accept input string with spaces
@@ -128,7 +130,7 @@ int main(){
 						
 					//check if the final token in the command is &
 					//this indicates the process should run in the background
-					if(strcmp(token, "&") == 0){
+					if((strcmp(token, "&") == 0) && i == spaceCount){
 						//printf("now in back ground\n");
 						//fflush(stdout);
 						//this flag indicates that the process will be in the background
@@ -136,21 +138,31 @@ int main(){
 						break;
 					}
 					//otherwise add the token to the next position in newargv
-					else{
-						//newargv[i] = token;
-										
+					else{								
 						//chek if a token is $$
 						//if it is, replace it with the current PID (that of smallsh)
+						
+										
 						if(strcmp(token, "$$") == 0){
 					   		sprintf(token, "%d", getpid());
 							fflush(stdout);
 						}
+						/*
+						else{
+							for(j = 0; j < strlen(token); j++){
+								if(((i+1) < strlen(token)) && (token[i] == '$') && (token[i+1] == '$')){
+									token2 = strtok_r(token, "$", &saveptr2);
+									//token3 = strtok_r(NULL, " ", &saveptr2);
+									sprintf(token, "%s%d", token2, getpid());
+								}
+							}
 
+						}
+						*/
 						newargv[i] = token;
 					}
 				}
 			}
-			
 			
 			//set final argument to NULL 
 			//this indicating to the process that there are no more arguments
